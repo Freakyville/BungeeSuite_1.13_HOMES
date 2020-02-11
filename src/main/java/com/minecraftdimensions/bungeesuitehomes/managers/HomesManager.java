@@ -1,6 +1,7 @@
 package com.minecraftdimensions.bungeesuitehomes.managers;
 
 import com.minecraftdimensions.bungeesuitehomes.BungeeSuiteHomes;
+import com.minecraftdimensions.bungeesuitehomes.redis.RedisManager;
 import com.minecraftdimensions.bungeesuitehomes.tasks.PluginMessageTask;
 import com.minecraftdimensions.bungeesuiteteleports.managers.TeleportsManager;
 import org.bukkit.Bukkit;
@@ -20,44 +21,27 @@ public class HomesManager {
     public static HashMap<String, Location> pendingTeleports = new HashMap<>();
 
     public static void deleteHome( CommandSender sender, String home ) {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream( b );
-        try {
-            out.writeUTF( "deletehome" );
-            out.writeUTF( sender.getName() );
-            out.writeUTF( home );
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
-        new PluginMessageTask( b ).runTaskAsynchronously( BungeeSuiteHomes.instance );
-
+        StringBuilder sb = new StringBuilder();
+        sb.append("deletehome").append(";");
+        sb.append(sender.getName()).append(";");
+        sb.append(home);
+        RedisManager.getInstance().publish(sb.toString(), "HOMES_REQUEST");
     }
 
     public static void sendHome( CommandSender sender, String home ) {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream( b );
-        try {
-            out.writeUTF( "sendplayerhome" );
-            out.writeUTF( sender.getName() );
-            out.writeUTF( home );
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
-        new PluginMessageTask( b ).runTaskAsynchronously( BungeeSuiteHomes.instance );
-
+        StringBuilder sb = new StringBuilder();
+        sb.append("sendplayerhome").append(";");
+        sb.append(sender.getName()).append(";");
+        sb.append(home).append(";");
+        sb.append(CooldownManager.getInstance().getCooldown("HOME", sender));
+        RedisManager.getInstance().publish(sb.toString(), "HOMES_REQUEST");
     }
 
     public static void getHomesList( CommandSender sender ) {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream( b );
-        try {
-            out.writeUTF( "gethomeslist" );
-            out.writeUTF( sender.getName() );
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
-        new PluginMessageTask( b ).runTaskAsynchronously( BungeeSuiteHomes.instance );
-
+        StringBuilder sb = new StringBuilder();
+        sb.append("gethomeslist").append(";");
+        sb.append(sender.getName());
+        RedisManager.getInstance().publish(sb.toString(), "HOMES_REQUEST");
     }
 
     public static void importHomes( CommandSender sender ) {
@@ -97,62 +81,43 @@ public class HomesManager {
     }
 
     public static void reloadHomes( CommandSender sender ) {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream( b );
-        try {
-            out.writeUTF( "reloadhomes" );
-            out.writeUTF( sender.getName() );
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
-        new PluginMessageTask( b ).runTaskAsynchronously( BungeeSuiteHomes.instance );
-
+        StringBuilder sb = new StringBuilder();
+        sb.append("reloadhomes").append(";");
+        sb.append(sender.getName());
+        RedisManager.getInstance().publish(sb.toString(), "HOMES_REQUEST");
     }
 
     public static void setHome( CommandSender sender, String home ) {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream( b );
         Location l = ( ( Player ) sender ).getLocation();
-        try {
-            out.writeUTF( "setplayershome" );
-            out.writeUTF( sender.getName() );
-            out.writeInt( getServerHomesLimit( sender ) );
-            out.writeInt( getGlobalHomesLimit( sender ) );
-            out.writeUTF( home );
-            out.writeUTF( l.getWorld().getName() );
-            out.writeDouble( l.getX() );
-            out.writeDouble( l.getY() );
-            out.writeDouble( l.getZ() );
-            out.writeFloat( l.getYaw() );
-            out.writeFloat( l.getPitch() );
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
-        new PluginMessageTask( b ).runTaskAsynchronously( BungeeSuiteHomes.instance );
-
+        StringBuilder sb = new StringBuilder();
+        sb.append("setplayershome").append(";");
+        sb.append(sender.getName()).append(";");
+        sb.append(getServerHomesLimit( sender )).append(";");
+        sb.append(getGlobalHomesLimit( sender )).append(";");
+        sb.append(home).append(";");
+        sb.append(l.getWorld().getName()).append(";");
+        sb.append(l.getX()).append(";");
+        sb.append(l.getY()).append(";");
+        sb.append(l.getZ()).append(";");
+        sb.append(l.getYaw()).append(";");
+        sb.append(l.getPitch());
+        RedisManager.getInstance().publish(sb.toString(), "HOMES_REQUEST");
     }
 
     public static void setHome( String sender, String home, Location l ) {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream( b );
-        try {
-            out.writeUTF( "setplayershome" );
-            out.writeUTF( sender );
-            out.writeInt( 900 );
-            out.writeInt( 1000 );
-            out.writeUTF( home );
-            out.writeUTF( l.getWorld().getName() );
-            out.writeDouble( l.getX() );
-            out.writeDouble( l.getY() );
-            out.writeDouble( l.getZ() );
-            out.writeFloat( l.getYaw() );
-            out.writeFloat( l.getPitch() );
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
-        new PluginMessageTask( b ).runTaskAsynchronously( BungeeSuiteHomes.instance );
-
-
+        StringBuilder sb = new StringBuilder();
+        sb.append("setplayershome").append(";");
+        sb.append(sender).append(";");
+        sb.append(900).append(";");
+        sb.append(1000).append(";");
+        sb.append(home).append(";");
+        sb.append(l.getWorld().getName()).append(";");
+        sb.append(l.getX()).append(";");
+        sb.append(l.getY()).append(";");
+        sb.append(l.getZ()).append(";");
+        sb.append(l.getYaw()).append(";");
+        sb.append(l.getPitch());
+        RedisManager.getInstance().publish(sb.toString(), "HOMES_REQUEST");
     }
 
     public static int getServerHomesLimit( CommandSender p ) {
@@ -214,16 +179,9 @@ public class HomesManager {
     }
 
     public static void sendVersion() {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream( b );
-        try {
-            out.writeUTF( "sendversion" );
-            out.writeUTF( ChatColor.RED + "Homes - " + ChatColor.GOLD + BungeeSuiteHomes.instance.getDescription().getVersion() );
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
-        new PluginMessageTask( b ).runTaskAsynchronously( BungeeSuiteHomes.instance );
-
-
+        StringBuilder sb = new StringBuilder();
+        sb.append("sendversion").append(";");
+        sb.append(ChatColor.RED + "Homes - " + ChatColor.GOLD + BungeeSuiteHomes.instance.getDescription().getVersion());
+        RedisManager.getInstance().publish(sb.toString(), "HOMES_REQUEST");
     }
 }
